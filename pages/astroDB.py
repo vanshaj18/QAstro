@@ -67,8 +67,11 @@ def data_page():
                     database=database,
                     extra_options=extra_options
                 )
-                if data.status_code != 200:
+                if data.status_code == 500:
+                    raise ValueError("Server error. Please try again later.")
+                elif data.status_code != 200:
                     raise ValueError("No data returned. Please check your inputs.")
+                
             
             except Exception as e:
                 st.error(f"Error during data fetch: {e}")

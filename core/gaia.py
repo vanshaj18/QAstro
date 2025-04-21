@@ -44,7 +44,7 @@ def gaia_api(
         coord = SkyCoord(ra = simbad_data["ra"][0], dec = simbad_data['dec'][0], unit=(u.hourangle, u.deg))
         try: 
             # query = gaia.cone_search_async(coord, radius = radius * u.deg, table_name=gaia_database)
-            adql_query = f"""SELECT TOP 5 * FROM gaia{gaia_database}.gaia_source  WHERE 1 = CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {coord.ra.deg}, {coord.dec.deg}, {radius}))"""
+            adql_query = f"""SELECT TOP 5 source_id, ra, dec, parallax, pmra, pmdec FROM gaia{gaia_database}.gaia_source  WHERE 1 = CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {coord.ra.deg}, {coord.dec.deg}, {radius}))"""
     
         except Exception as e:
             raise ValueError(f"Error in gaia searching {object_name}: {e} ")
@@ -57,5 +57,5 @@ def gaia_api(
     
     encoded_query = urllib.parse.quote(adql_query)
     urli = f"{base_url}{encoded_query}"
-    print(urli)
+
     return urli

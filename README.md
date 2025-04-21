@@ -51,7 +51,8 @@ source venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
 ```
---
+---
+
 ## 📄 License
 
 This project is licensed under the [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).  
