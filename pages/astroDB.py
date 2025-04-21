@@ -23,22 +23,22 @@ def data_page():
     dec = st.sidebar.text_input("Dec (deg)")
     bibcode = st.sidebar.text_input("bibcode")
     # "VizieR", "NED", "ADS",  "ALL"
-    database = st.sidebar.selectbox("Select Database(s)", ["NONE", "SIMBAD", "IRAS", "SDSS", "GAIA ARCHIVE"])
+    database = st.sidebar.selectbox("Select Database(s)", ["NONE", "SIMBAD", "IRSA", "SDSS", "GAIA ARCHIVE"])
     
     extra_options = None
     # if selected viser, add wavelength selection
     if database == "VizieR":
-        extra_options = st.sidebar.selectbox("Select Wavelength", ["Raido", "IR", "Optical", "UV", "EUV", "X-Ray", "Gamma"])
+        extra_options = st.sidebar.selectbox("Select Wavelength", ["NONE", "Raido", "IR", "Optical", "UV", "EUV", "X-Ray", "Gamma"])
 
     #if SDSS is selected, subsquent options will be displayed
     if database == "SDSS":
-        extra_options = st.sidebar.selectbox("Select SDSS Options", ["Spectro", "IR Spectro"])
+        extra_options = st.sidebar.selectbox("Select SDSS Options", ["NONE", "Spectro", "IR Spectro"])
 
     if database == "GAIA ARCHIVE":
-        extra_options = st.sidebar.selectbox("Select GAIA Database", ["dr1", "dr2", "dr3"])  
+        extra_options = st.sidebar.selectbox("Select GAIA Database", ["NONE", "dr1", "dr2", "dr3"])  
 
-    if database == "IRAS":
-        extra_options = st.sidebar.selectbox("Select common IRAS Catalogs", ["ALLWISE", "2MASS", "GLIMPSE I", "COSMOS", "IRAS Point Source"])
+    if database == "IRSA":
+        extra_options = st.sidebar.selectbox("Select common IRSA Catalogs", ["NONE", "ALL_WISE", "2MASS", "GLIMPSE_I", "COSMOS", "IRAS"])
 
     submitted = st.sidebar.button("Fetch Data")
     if st.sidebar.button("New Query"):
@@ -53,7 +53,7 @@ def data_page():
         st.sidebar.write("Bibcode:", bibcode)
         st.sidebar.write("Database:", database)
         if extra_options:
-            st.sidebar.write("Extra Option:", extra_options)
+            st.sidebar.write("catalogue:", extra_options)
             
         st.sidebar.success("Query submitted!")
 
@@ -72,7 +72,6 @@ def data_page():
                 elif data.status_code != 200:
                     raise ValueError("No data returned. Please check your inputs.")
                 
-            
             except Exception as e:
                 st.error(f"Error during data fetch: {e}")
                 sys.exit(1)

@@ -40,7 +40,7 @@ def gaia_api(
         # perfom a cone search with the object name
         # conver the object into prespective ra dec positions
         simbad_data = simbad.query_object(object_name)
-        print(simbad_data)
+
         coord = SkyCoord(ra = simbad_data["ra"][0], dec = simbad_data['dec'][0], unit=(u.hourangle, u.deg))
         try: 
             # query = gaia.cone_search_async(coord, radius = radius * u.deg, table_name=gaia_database)

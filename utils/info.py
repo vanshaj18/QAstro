@@ -89,3 +89,25 @@ def gaia_info_md():
             <p>To query GAIA, you can use the following parameters:</p>
         </div>
         """, unsafe_allow_html=True)
+    
+def iras_info_md():
+    st.markdown("""
+        <style>
+            .container {
+                padding: 20px;
+                width: 80%;
+                text-align: left;    
+                font-family: "Times New Roman";
+                font-size: 18px;
+            }   
+        </style>
+                
+        <div class="container">
+            <h2>IRAS Database</h2>
+            <p>The Infrared Astronomical Satellite (IRAS) was the first satellite to perform a survey of the entire sky in infrared wavelengths. 
+                It provides data on the positions, fluxes, and colors of celestial objects.</p>
+            <p>It is a valuable resource for astronomers and researchers in the field of astrophysics.</p>
+            <p>For more information, visit the <a href="https://irsa.ipac.caltech.edu/" target="_blank">IRAS website</a>.</p>
+            <p>To query IRAS, you can use the following parameters:</p>
+        </div>
+        """, unsafe_allow_html=True)

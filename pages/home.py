@@ -21,7 +21,7 @@ def home_page():
                 font-size: 3em;
                 font-weight: bold;
                 font-family: "Times New Roman", serif;
-                margin-top: 2rem;
+                margin-top: 0.5rem;
             }
             .content {
                 font-size: 1.2em;
@@ -46,7 +46,7 @@ def home_page():
                     <h3> The Idea </h3>
                         <p>The idea behind the application revolves around the need for a unified platform where astronomical data for a given object can be fetched easily.
                             Having faced the issue of gathering data from multiple databases myself, I understand the time spent by researchers in astronomy and astrophysics just to gather data.
-                            With a vast number of databases in the astronomy community, it's difficult to keep track of all available data on an object. "
+                            With a vast number of databases in the astronomy community, it's difficult to keep track of all available data on an object.
                             QAstro provides a simple and elegant platform to fetch data simultaneously from databases like SIMBAD, IRAS, 2MASS, GAIA Archive, SDSS, and more.</p>
                     <h4> Features </h4>
                         <p>

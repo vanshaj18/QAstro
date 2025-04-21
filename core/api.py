@@ -1,14 +1,11 @@
 from typing import Optional
 import requests
 from core.gaia import gaia_api
-from core.iras import iras_api
+from core.irsa import irsa_api
 from core.ned import ned_api
 from core.sdss import sdss_api
 from core.simbad import simbad_api
 from core.viser import viser_api
-
-#base urls
-iras_base_url = "https://irsa.ipac.caltech.edu/SCS?"
 
 def data_fetcher(object_name, 
                     ra, 
@@ -52,8 +49,8 @@ def data_fetcher(object_name,
     elif database == "SDSS":
         url = sdss_api(object_name, ra, dec, extra_options)
 
-    elif database == "IRAS":
-        url = iras_api(object_name, ra, dec, extra_options)
+    elif database == "IRSA":
+        url = irsa_api(object_name, ra, dec, extra_options)
 
     # elif database == "ADS":
     #     nasa_ads_data = nasa_ads_api()

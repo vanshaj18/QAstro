@@ -9,3 +9,4 @@ astroquery
 streamlit-modal
 streamlit_navigation_bar
 streamlit-community-navigation-bar
+pyvo
