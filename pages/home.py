@@ -37,7 +37,7 @@ def home_page():
     st.markdown("""
             <div class="bg-container">
                 <div class="title"> QAstro </div>
-                <div style="color:red;"> <p> There is some issue with SDSS and IRAS API. Fixing at the time. Please check back later. </p> </div>
+                <div style="color:red;"> <p> We are working on fixing SDSS integraiton. Please check back late for SDSSr. </p> </div>
                 <div class = "content">  
                     <h3> Overview </h3>
                         <p> QAstro is a web-based application designed to facilitate the gathering and visualization of astronomical data. 
