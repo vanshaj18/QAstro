@@ -45,7 +45,7 @@ QAstro was born out of a common challenge in the astronomy community — the ted
 ```bash
 git clone git@github-personal:vanshaj18/qastro.git
 cd qastro
-python3 -m venv venv
+<python version> -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
