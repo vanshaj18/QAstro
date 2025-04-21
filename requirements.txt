@@ -1,10 +1,11 @@
 flask==2.3.3
 sqlalchemy==2.0.21
 requests==2.31.0
-pandas==2.1.1
+pandas
 streamlit
 numpy
 astropy
 astroquery
 streamlit-modal
 streamlit_navigation_bar
+streamlit-community-navigation-bar
