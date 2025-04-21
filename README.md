@@ -1,6 +1,7 @@
 # 🌌 QAstro
 
-**QAstro** is a web-based application designed to facilitate the gathering and visualization of astronomical data. Built with [Streamlit](https://streamlit.io) and hosted on **Streamlit Cloud**, QAstro provides a simple, elegant interface to query multiple astronomical databases **simultaneously**.
+**QAstro** is a web-based application designed to facilitate the gathering and visualization of astronomical data. 
+Built with [Streamlit](https://streamlit.io) and hosted on **Streamlit Cloud**. QAstro provides a simple, elegant interface to query multiple astronomical databases **simultaneously**.
 
 ---
 
@@ -49,3 +50,10 @@ cd qastro
 source venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
+
+--
+## 📄 License
+
+This project is licensed under the [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).  
+You are free to use, copy, modify, and distribute the software and associated documentation, provided that the original author (Vanshaj) is credited.
+
