@@ -38,7 +38,7 @@ def data_page():
         extra_options = st.sidebar.selectbox("Select GAIA Database", ["dr1", "dr2", "dr3"])  
 
     if database == "IRAS":
-        extra_options = st.sidebar.selectbox("Select common IRAS Catalogs", ["ALL WISE", "2MASS", "GLIMPSE I", "COSMOS", "IRAS Point Source"])
+        extra_options = st.sidebar.selectbox("Select common IRAS Catalogs", ["ALLWISE", "2MASS", "GLIMPSE I", "COSMOS", "IRAS Point Source"])
 
     submitted = st.sidebar.button("Fetch Data")
     if st.sidebar.button("New Query"):

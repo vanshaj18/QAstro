@@ -4,7 +4,7 @@ import astropy.units as u
 import urllib.parse
 
 
-def iras_api( object_name, ra, dec, extra_options, radius = 0.1, output_format='json'):
+def iras_api( object_name, ra, dec, extra_options, radius = 0.1, output_format='csv'):
     """
     Constructs a URL for querying the IRAS database based on the provided parameters.
     
@@ -31,10 +31,8 @@ def iras_api( object_name, ra, dec, extra_options, radius = 0.1, output_format='
 
     #based on the selected options, we need to select the appropriate table in IRAS
     table_name = None
-    adql_query = f"select * from {table_name} WHERE CONTAINS(POINT('ICRS',ra, dec), CIRCLE('ICRS',{coord.ra.deg},{coord.dec.deg},{radius}))=1"
-    if extra_options == "ALL WISE":
+    if extra_options == "ALLWISE":
         table_name = "allwise_p3as_psd"
-
     if extra_options == "2MASS":
         table_name = "fp_psc"
     elif extra_options == "GLIMPSE I":
@@ -43,8 +41,10 @@ def iras_api( object_name, ra, dec, extra_options, radius = 0.1, output_format='
         table_name = "cosmos_phot" 
     elif extra_options == "IRAS Point Source":
         table_name = "iraspsc"
-    else: 
-        raise ValueError(f"Invalid options for IRAS")
+    # else: 
+    #     raise ValueError(f"Invalid options for IRAS")
+    
+    adql_query = f"Select * from {table_name} WHERE CONTAINS(POINT('ICRS',ra, dec), CIRCLE('ICRS',{coord.ra.deg},{coord.dec.deg},{radius}))=1&FORMAT={output_format}"
     
     encoded_query = urllib.parse.quote(adql_query)
     
