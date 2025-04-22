@@ -2,8 +2,6 @@ from astroquery.simbad import Simbad as simbad
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 import urllib.parse
-import pyvo as vo
-
 
 def irsa_api( object_name, ra, dec, extra_options, radius = 0.1, output_format='CSV'):
     """

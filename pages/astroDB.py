@@ -14,6 +14,31 @@ def data_page():
                 width: 80%;    
             }     
         </style>""", unsafe_allow_html=True)
+    
+    #need to give examples for searching data 
+    st.markdown("""
+        <div class="container">
+            <h2> Querying Astronomical Data </h2>
+            <p> QAstro allows you to query multiple astronomical databases simultaneously.
+            </p>
+            <p> You can search for data using the following parameters:</p>
+            <ul>
+                <li> <b>Object Name</b>: Enter the name of the astronomical object (e.g., 'M 31', 'hd1').</li>
+                <li> <b>RA (Right Ascension)</b>: Enter the RA in decimal degrees.</li>
+                <li> <b>Dec (Declination)</b>: Enter the Dec in decimal degrees.</li>
+                <li> <b>Bibcode</b>: Enter the bibcode of the object.</li>
+                <li> <b>Database</b>: Select the database(s) you want to query.</li>
+                <li> <b>Extra Options</b>: Depending on the selected database, you may have additional options (e.g., wavelength selection for VizieR).</li>
+            </ul>
+            <p> <b> For example</b>: Searching for the Andromeda Galaxy (M 31): 
+                <br> 1. Enter "M31" in the Object Name field <br> 
+                    2. Select the desired database. <br>
+                    3. Click the <b> Fetch Data </b> button to retrieve the data. <br>
+             The retrieved data will be displayed in a table format, and you can download it as a CSV file. <br>
+             If you want to start a new query, click the <b>New Query</b> button. <br>
+            <p> Happy querying!</p>
+        </div>
+    """, unsafe_allow_html=True)
 
     # Sidebar - User Input
     # Sidebar form for user input

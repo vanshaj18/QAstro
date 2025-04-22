@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_modal import Modal
 
 def modal():
-    modal = Modal(key='QAstro', title="Terms of Use - QAstro", padding=50, max_width=1000)
+    modal = Modal(key='QAstro', title=" Terms of Use - QAstro ", padding=30, max_width=1000)
 
     if 'popup_closed' not in st.session_state:
         st.session_state.popup_closed = False
