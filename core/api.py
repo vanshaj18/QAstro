@@ -58,7 +58,7 @@ def data_fetcher(object_name,
     
     elif database == "GAIA ARCHIVE":
         url = gaia_api(object_name, ra, dec, extra_options)
-        
+        print(url)
     # else: # this will be the case of ALL the databases
     #     full_data = full_search_api()
     #     return full_data

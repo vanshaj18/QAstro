@@ -31,9 +31,6 @@ def gaia_api(
     """
 
     base_url = f"https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT={output_format}&QUERY="
-
-    # if object_name:
-    #     query = "Select top 2 source_id, ra, dec from {gaia_database}.gaiasource where"
     adql_query = None
 
     if object_name:
@@ -43,8 +40,7 @@ def gaia_api(
 
         coord = SkyCoord(ra = simbad_data["ra"][0], dec = simbad_data['dec'][0], unit=(u.hourangle, u.deg))
         try: 
-            # query = gaia.cone_search_async(coord, radius = radius * u.deg, table_name=gaia_database)
-            adql_query = f"""SELECT TOP 5 source_id, ra, dec, parallax, pmra, pmdec FROM gaia{gaia_database}.gaia_source  WHERE 1 = CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {coord.ra.deg}, {coord.dec.deg}, {radius}))"""
+            adql_query = f"""SELECT * FROM gaia{gaia_database}.gaia_source WHERE source_id = '{object_name}"""
     
         except Exception as e:
             raise ValueError(f"Error in gaia searching {object_name}: {e} ")
