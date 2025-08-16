@@ -1,0 +1,26 @@
+# Environment files
+.env
+.env.*
+.ENV
+.ENV.*
+env/
+ENV/
+.vscode/
+.devcontainer/
+# Python
+__pycache__/
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE and editor files
+.vscode/
+.idea/
+.kiro
+
+# OS generated files
+.DS_Store
