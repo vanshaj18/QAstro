@@ -48,7 +48,7 @@ def data_page():
     dec = st.sidebar.text_input("Dec (deg)")
     bibcode = st.sidebar.text_input("bibcode")
     # "VizieR", "NED", "ADS",  "ALL"
-    database = st.sidebar.selectbox("Select Database(s)", ["NONE", "SIMBAD", "IRSA", "SDSS", "GAIA ARCHIVE"])
+    database = st.sidebar.selectbox("Select Database(s)", ["NONE", "SIMBAD", "IRSA", "SDSS", "GAIA ARCHIVE", "NASA ADS"])
     
     extra_options = None
     # if selected viser, add wavelength selection
@@ -64,6 +64,15 @@ def data_page():
 
     if database == "IRSA":
         extra_options = st.sidebar.selectbox("Select common IRSA Catalogs", ["NONE", "ALL_WISE", "2MASS", "GLIMPSE_I", "COSMOS", "IRAS"])
+
+    if database == "NASA ADS":
+        st.sidebar.subheader("NASA ADS Options")
+        author = st.sidebar.text_input("Author (optional)")
+        year_range = st.sidebar.text_input("Year Range (e.g., 2020-2023 or 2022)")
+        extra_options = {
+            'author': author if author else None,
+            'year_range': year_range if year_range else None
+        }
 
     submitted = st.sidebar.button("Fetch Data")
     if st.sidebar.button("New Query"):

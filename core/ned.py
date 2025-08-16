@@ -1,6 +1,5 @@
 import urllib
 
-
 def ned_api(object_name, ra, dec, bibcode, output_format='json'):
     """
     NED Database maintained by NASA. Its used for Cataloging ExtraGalactic Objects.

@@ -46,7 +46,37 @@ def display_data(data, database: str):
         df = pd.read_csv(StringIO(extractedData), sep=",", header=None) 
         headers = df.iloc[0].tolist()
         data = df.iloc[1:].values.tolist()
-        # return 
+        # return
+
+    elif database == "NASA ADS":
+        # NASA ADS returns JSON with 'response' containing 'docs' array
+        if 'response' in extractedData and 'docs' in extractedData['response']:
+            docs = extractedData['response']['docs']
+            if not docs:
+                raise ValueError("No publications found for the given search criteria")
+            
+            # Extract relevant fields from each document
+            processed_data = []
+            for doc in docs:
+                row = {
+                    'Bibcode': doc.get('bibcode', [''])[0] if isinstance(doc.get('bibcode'), list) else doc.get('bibcode', ''),
+                    'Title': doc.get('title', [''])[0] if isinstance(doc.get('title'), list) else doc.get('title', ''),
+                    'Authors': ', '.join(doc.get('author', [])) if doc.get('author') else '',
+                    'Year': doc.get('year', ''),
+                    'Publication': doc.get('pub', ''),
+                    'DOI': ', '.join(doc.get('doi', [])) if doc.get('doi') else '',
+                    'Citation Count': doc.get('citation_count', 0),
+                    'Read Count': doc.get('read_count', 0),
+                    'Keywords': ', '.join(doc.get('keyword', [])) if doc.get('keyword') else '',
+                    'Abstract': doc.get('abstract', '')
+                }
+                processed_data.append(row)
+            
+            # Create DataFrame directly from processed data
+            df = pd.DataFrame(processed_data)
+            return df
+        else:
+            raise ValueError("Invalid NASA ADS response format") 
 
     #cleaning the data. todo: remove NAN, empty or NONE type data with columns
     try: 

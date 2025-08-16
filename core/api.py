@@ -6,6 +6,7 @@ from core.ned import ned_api
 from core.sdss import sdss_api
 from core.simbad import simbad_api
 from core.viser import viser_api
+from core.ads import ads_api, get_ads_headers
 
 def data_fetcher(object_name, 
                     ra, 
@@ -52,9 +53,19 @@ def data_fetcher(object_name,
     elif database == "IRSA":
         url = irsa_api(object_name, ra, dec, extra_options)
 
-    # elif database == "ADS":
-    #     nasa_ads_data = nasa_ads_api()
-    #     return nasa_ads_data
+    elif database == "NASA ADS":
+        url = ads_api(object_name, bibcode, extra_options.get('author') if extra_options else None, 
+                     extra_options.get('year_range') if extra_options else None)
+        # NASA ADS requires special headers with API key
+        try:
+            headers = get_ads_headers()
+            data = requests.get(url, headers=headers)
+            return data
+        except ValueError as e:
+            # Handle API key errors gracefully
+            raise ValueError(f"NASA ADS API error: {str(e)}")
+        except Exception as e:
+            raise ValueError(f"Error querying NASA ADS: {str(e)}")
     
     elif database == "GAIA ARCHIVE":
         url = gaia_api(object_name, ra, dec, extra_options)

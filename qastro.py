@@ -8,8 +8,7 @@ from utils.modal import modal
 # # Set page title
 st.set_page_config(page_title="QAstro", 
                    layout="centered", 
-                   initial_sidebar_state="auto"
-                   )
+                   initial_sidebar_state="auto")
 
 #navbar
 pages = ["Home", "Data"]
