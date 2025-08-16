@@ -64,6 +64,8 @@ def home_page():
                                 <li> GAIA Archive </li>
                                 <li> IRAS </li>
                                 <li> NASA ADS </li>
+                                <li> NED </li>
+                                <li> Vizier </li>
                             </ol>
                         </p>
                     <h4> Future Implementations </h4>
@@ -72,7 +74,6 @@ def home_page():
                                 <li> Data-Visualization on Aitoff Projection </li>
                                 <li> Filter selection </li>
                                 <li> Natural Language based queries </li>
-                                <li> Additional Databases: VizieR, NED, and more.</li>
                             </ul>
                         </p>
                 </div>

@@ -26,34 +26,34 @@ def get_wavelength_catalogs(wavelength: str) -> str:
 def build_vizier_object_query(object_name: str, catalog_filter: str = "") -> str:
     """
     Build ADQL query for object name search in VizieR.
-
+    
     Args:
         object_name: Name of the astronomical object
         catalog_filter: Optional catalog filtering clause
-
+        
     Returns:
         str: ADQL query string
     """
-    query = f'SELECT TOP 100 cat_name, table_name, raj2000 AS ra, dej2000 AS dec, main_id, recno FROM "METAcatalog" AS meta JOIN "METAtab" AS tab ON meta.catid = tab.catid WHERE CONTAINS(POINT(\'ICRS\', raj2000, dej2000), CIRCLE(\'ICRS\', (SELECT raj2000 FROM "SIMBAD"."basic" WHERE main_id = \'{object_name}\'), (SELECT dej2000 FROM "SIMBAD"."basic" WHERE main_id = \'{object_name}\'), 0.1)) = 1 {catalog_filter} ORDER BY cat_name'
+    # Use a basic query that searches for the object name across VizieR catalogs
+    query = f"""SELECT TOP 100 cat_name, table_name, raj2000 as ra, dej2000 as dec, main_id, recno FROM "METAcatalog" as meta JOIN "METAtab" as tab ON meta.catid = tab.catid WHERE CONTAINS(POINT('ICRS', raj2000, dej2000), CIRCLE('ICRS', (SELECT raj2000 FROM "SIMBAD"."basic" WHERE main_id = '{object_name}'), (SELECT dej2000 FROM "SIMBAD"."basic" WHERE main_id = '{object_name}'), 0.1)) = 1 {catalog_filter} ORDER BY cat_name"""
     return query.strip()
 
-def build_vizier_cone_query(catalog: str, ra: float, dec: float, radius_arcmin: float = 2.0, columns: str = "*") -> str:
+def build_vizier_cone_query(ra: float, dec: float, radius_arcmin: float = 2.0, catalog_filter: str = "") -> str:
     """
-    Build ADQL cone search query for a specific VizieR catalog.
+    Build ADQL query for cone search in VizieR.
     
     Args:
-        catalog: Catalog identifier (e.g., "II/246" for 2MASS)
         ra: Right Ascension in degrees
-        dec: Declination in degrees
+        dec: Declination in degrees  
         radius_arcmin: Search radius in arcminutes
-        columns: Columns to select (default: "*")
-    
+        catalog_filter: Optional catalog filtering clause
+        
     Returns:
         str: ADQL query string
     """
     radius_deg = radius_arcmin / 60.0  # Convert arcminutes to degrees
-    query = f"""SELECT {columns} FROM "{catalog}" WHERE CONTAINS(POINT('ICRS', RAJ2000, DEJ2000), CIRCLE('ICRS', {ra}, {dec}, {radius_deg})) = 1"""
-    return query.strip()
+    
+    query = f""" SELECT TOP 100 cat_name, table_name, raj2000 as ra, dej2000 as dec, main_id, recno FROM "METAcatalog" as meta JOIN "METAtab" as tab ON meta.catid = tab.catid WHERE CONTAINS(POINT('ICRS', raj2000, dej2000), CIRCLE('ICRS', {ra}, {dec}, {radius_deg})) = 1 {catalog_filter} ORDER BY cat_name """
 
     return query.strip()
 
@@ -124,5 +124,5 @@ def viser_api(object_name: Optional[str] = None,
     # Construct final URL with encoded query
     encoded_query = urllib.parse.quote(query)
     final_url = f"{base_url}?REQUEST=doQuery&LANG=ADQL&FORMAT={output_format}&QUERY={encoded_query}"
-
+    
     return final_url
