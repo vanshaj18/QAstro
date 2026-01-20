@@ -19,3 +19,6 @@ def db_markdown(database):
 
     if database == "IRAS":
         iras_info_md()
+
+    if database == "NASA ADS":
+        ads_info_md()

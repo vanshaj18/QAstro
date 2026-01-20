@@ -9,27 +9,29 @@ def home_page():
                 border-radius: 10px;
                 position: relative;
                 z-index: 1;
+                font-family: "Times New Roman", serif !important;
             }
             .bg-overlay {
                 padding: 3rem;
                 border-radius: 12px;
                 text-align: center;
                 font-size: 1.5em;
+                font-family: "Times New Roman", serif !important;
             }
             .title {
                 text-align: center;
                 font-size: 3em;
                 font-weight: bold;
-                font-family: "Times New Roman", serif;
+                font-family: "Times New Roman", serif !important;
                 margin-top: 0.5rem;
             }
             .content {
                 font-size: 1.2em;
-                font-family: "Times New Roman", serif;
+                font-family: "Times New Roman", serif !important;
                 line-height: 1.6;
             }
-            .content h3 h4{
-                font-family: "Times New Roman", serif;
+            .content h3, .content h4, .content ul, .content ol, .content li, .content p {
+                font-family: "Times New Roman", serif !important;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -37,7 +39,7 @@ def home_page():
     st.markdown("""
             <div class="bg-container">
                 <div class="title"> QAstro </div>
-                <div style="color:red;"> <p> We are working on fixing SDSS integraiton. Please check back late for SDSSr. </p> </div>
+                <div style="color:red; font-family:'Times New Roman',serif !important;"> <p> We are working on fixing SDSS integraiton. Please check back late for SDSSr. </p> </div>
                 <div class = "content">  
                     <h3> Overview </h3>
                         <p> QAstro is a web-based application designed to facilitate the gathering and visualization of astronomical data. 
@@ -54,7 +56,7 @@ def home_page():
                             <li> <b>User-friendly Interface</b>: Designed for the general public. QAstro handles the data collection.</li>
                             <li> <b>Multiple Database Queries</b>: Query various astronomical databases from one place.</li>
                             <li> <b>Time Efficiency</b>: Reduce time spent on data gathering.</li>
-                        <ul>
+                        </ul>
                         </p>
                     <h4> Supported Databases </h4>
                         <p> 

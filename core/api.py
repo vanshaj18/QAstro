@@ -1,7 +1,7 @@
 from typing import Optional
 import requests
 from core.gaia import gaia_api
-from core.irsa import irsa_api
+from core.irsa import irsa_api, irsa_submit_async_job, irsa_wait_for_job, build_irsa_query
 from core.ned import ned_api
 from core.sdss import sdss_api
 from core.simbad import simbad_api
@@ -15,6 +15,7 @@ def data_fetcher(object_name,
                     database: str,
                     extra_options,
                     wavelength="Select Wavelength",
+                    use_async_irsa: bool = False,
                 ):
     """
     Based on the selected inputs, the function fetches the data as per the database selected.
@@ -51,7 +52,23 @@ def data_fetcher(object_name,
         url = sdss_api(object_name, ra, dec, extra_options)
 
     elif database == "IRSA":
-        url = irsa_api(object_name, ra, dec, extra_options)
+        if use_async_irsa:
+            # Handle async IRSA query workflow
+            try:
+                # Build the ADQL query (using default radius of 0.1 degrees)
+                adql_query, coord = build_irsa_query(object_name, ra, dec, extra_options, radius=0.1)
+                
+                # Submit async job
+                job_id = irsa_submit_async_job(adql_query, output_format='CSV')
+                
+                # Wait for job completion and get results
+                data = irsa_wait_for_job(job_id, max_wait_time=300, poll_interval=5)
+                return data
+            except Exception as e:
+                raise ValueError(f"Error in async IRSA query: {str(e)}")
+        else:
+            # Synchronous query
+            url = irsa_api(object_name, ra, dec, extra_options, use_async=False)
 
     elif database == "NASA ADS":
         url = ads_api(object_name, bibcode, extra_options.get('author') if extra_options else None, 

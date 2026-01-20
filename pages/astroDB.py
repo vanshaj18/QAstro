@@ -1,9 +1,10 @@
 import sys
-import streamlit as st
 import pandas as pd
 from core.api import data_fetcher
 from core.visualizer import display_data
 from utils.database_info import db_markdown
+import streamlit as st
+from utils.modal import _modal_creator
 
 # define the function for the data page
 def data_page():
@@ -11,17 +12,17 @@ def data_page():
         <style> 
             .container {
                 padding: 20px;
-                width: 80%;    
+                width: 50%;    
             }     
         </style>""", unsafe_allow_html=True)
-    
-    #need to give examples for searching data 
-    st.markdown("""
+
+
+    # Query info text to show in modal
+    query_info_text = """
         <div class="container">
-            <h2> Querying Astronomical Data </h2>
-            <p> QAstro allows you to query multiple astronomical databases simultaneously.
-            </p>
-            <p> You can search for data using the following parameters:</p>
+            <h3>How to Query Astronomical Data</h3>
+            <p>QAstro allows you to query multiple astronomical databases simultaneously.</p>
+            <p>You can search for data using the following parameters:</p>
             <ul>
                 <li> <b>Object Name</b>: Enter the name of the astronomical object (e.g., 'M 31', 'hd1').</li>
                 <li> <b>RA (Right Ascension)</b>: Enter the RA in decimal degrees.</li>
@@ -30,15 +31,26 @@ def data_page():
                 <li> <b>Database</b>: Select the database(s) you want to query.</li>
                 <li> <b>Extra Options</b>: Depending on the selected database, you may have additional options (e.g., wavelength selection for VizieR).</li>
             </ul>
-            <p> <b> For example</b>: Searching for the Andromeda Galaxy (M 31): 
-                <br> 1. Enter "M31" in the Object Name field <br> 
-                    2. Select the desired database. <br>
-                    3. Click the <b> Fetch Data </b> button to retrieve the data. <br>
-             The retrieved data will be displayed in a table format, and you can download it as a CSV file. <br>
-             If you want to start a new query, click the <b>New Query</b> button. <br>
-            <p> Happy querying!</p>
+            <p>
+                <b>For example</b>: Searching for the Andromeda Galaxy (M 31):<br>
+                1. Enter "M31" in the Object Name field<br>
+                2. Select the desired database.<br>
+                3. Click the <b>Fetch Data</b> button to retrieve the data.<br>
+                The retrieved data will be displayed in a table format, and you can download it as a CSV file.<br>
+                If you want to start a new query, click the <b>New Query</b> button.<br>
+            </p>
+            <p>Happy querying!</p>
         </div>
-    """, unsafe_allow_html=True)
+    """
+
+    col1, col2 = st.columns([0.95, 0.005])
+    with col1:
+        st.markdown('<h2 style="display:inline;">Querying Astronomical Data</h2>', unsafe_allow_html=True)
+    with col2:
+        if st.button("ℹ", key="show_query_info", help="How to query?"):
+            st.session_state.query_info_modal_closed = False
+            _modal_creator(input_text=query_info_text, checkbox_flag=False, 
+                modal_kwargs={'key': 'query_info_modal', 'title': 'How to Query Astronomical Data', 'padding': 10, 'max_width': 1000})
 
     # Sidebar - User Input
     # Sidebar form for user input
@@ -63,8 +75,8 @@ def data_page():
         extra_options = st.sidebar.selectbox("Select GAIA Database", ["NONE", "dr1", "dr2", "dr3"])  
 
     if database == "IRSA":
-        extra_options = st.sidebar.selectbox("Select common IRSA Catalogs", ["NONE", "ALL_WISE", "2MASS", "GLIMPSE_I", "COSMOS", "IRAS"])
-
+        extra_options = st.sidebar.selectbox("Select common IRSA Catalogs", ["NONE", "ALL_WISE", "NEOWISE", "2MASS", "GLIMPSE_I", "COSMOS", "SPHEREX", "Euclid", "Spitzer"])
+        
     if database == "NASA ADS":
         st.sidebar.subheader("NASA ADS Options")
         author = st.sidebar.text_input("Author (optional)")

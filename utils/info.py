@@ -111,3 +111,25 @@ def iras_info_md():
             <p>To query IRAS, you can use the following parameters:</p>
         </div>
         """, unsafe_allow_html=True)
+    
+def ads_info_md():
+    st.markdown("""
+        <style>
+            .container {
+                padding: 20px;
+                width: 80%;
+                text-align: left;    
+                font-family: "Times New Roman";
+                font-size: 18px;
+            }   
+        </style>
+                
+        <div class="container">
+            <h2>NASA ADS Database</h2>
+            <p>The NASA Astrophysics Data System (NASA ADS) is a database of astronomical publications. 
+                It provides information such as titles, authors, and publication dates for various astronomical publications.</p>
+            <p>It is a valuable resource for astronomers and researchers in the field of astrophysics.</p>
+            <p>For more information, visit the <a href="https://ui.adsabs.harvard.edu/" target="_blank">NASA ADS website</a>.</p>
+            <p>To query NASA ADS, you can use the following parameters:</p>
+        </div>
+        """, unsafe_allow_html=True)
