@@ -1,5 +1,8 @@
 from typing import Optional
 import urllib.parse
+from core.logger.logger import setup_logger
+
+logger = setup_logger(__name__)
 
 # Base URLs for different SIMBAD query types
 # BASE_URL_ID = "https://simbad.cds.unistra.fr/simbad/sim-id"
@@ -10,10 +13,10 @@ import urllib.parse
 BASE_TAP_URL = "https://simbad.cds.unistra.fr/simbad/sim-tap/sync?request=doQuery&lang=adql"
 
 def simbad_api(object_name = None,
-            ra = None, 
-            dec = None, 
-            bibcode = None, 
-            radius_deg = 0.1, 
+            ra = None,
+            dec = None,
+            bibcode = None,
+            radius_deg = 0.1,
             output_format = 'json',
                 # radius_deg=0.1, # Search radius in degrees for cone search (SR parameter)
                 # # Format for ID/Ref queries ('output.format')
@@ -53,42 +56,58 @@ def simbad_api(object_name = None,
                     are not numeric.
     """
 
-    # params = {}
-    base_url = BASE_TAP_URL
-    query_type = None
-    base_query_string =  f"""SELECT basic.OID, RA, DEC, main_id AS "Main identifier",coo_bibcode AS "Coord Reference", plx_value as "Parallax", rvz_radvel as "Radial velocity", galdim_majaxis, galdim_minaxis,galdim_angle AS "Galaxy ellipse angle" """
+    logger.info(f"Starting simbad_api function")
+    logger.debug(f"Parameters: object_name={object_name}, ra={ra}, dec={dec}, bibcode={bibcode}, radius_deg={radius_deg}, output_format={output_format}")
 
-    # --- Determine Query Type based on Input Priority ---
-    if object_name:
-        query = base_query_string + f""" FROM basic JOIN ident ON oidref = oid WHERE id='{object_name}';"""
-        query_type = 'identifier'
+    try:
+        # params = {}
+        base_url = BASE_TAP_URL
+        logger.debug(f"Base URL: {base_url}")
+        query_type = None
+        base_query_string =  f"""SELECT basic.OID, RA, DEC, main_id AS "Main identifier",coo_bibcode AS "Coord Reference", plx_value as "Parallax", rvz_radvel as "Radial velocity", galdim_majaxis, galdim_minaxis,galdim_angle AS "Galaxy ellipse angle" """
 
-    elif ra is not None and dec is not None:
-        query_type = 'cone_search'
-        try:
-            # Validate RA/DEC are numbers and convert to string for URL
-            ra_str = str(float(ra))
-            dec_str = str(float(dec))
-        except (ValueError, TypeError):
-             raise ValueError("RA and DEC must be numeric values (decimal degrees).")
-        
-        query = base_query_string + f""" FROM basic JOIN flux ON oidref = oid AND CONTAINS(POINT('ICRS', RA, DEC), CIRCLE('ICRS', {ra}, {dec}, {radius_deg})) = 1 ORDER BY "Main identifier";""" 
+        # --- Determine Query Type based on Input Priority ---
+        if object_name:
+            query = base_query_string + f""" FROM basic JOIN ident ON oidref = oid WHERE id='{object_name}';"""
+            query_type = 'identifier'
+            logger.debug(f"Query type: {query_type}, object_name: {object_name}")
 
-    elif bibcode:
-        query = f""" SELECT basic.OID, main_id AS "Identifier", FROM has_ref JOIN basic ON oidref = oid JOIN ref ON oidbibref = oidbib, WHERE bibcode = {bibcode}, ORDER BY "Identifier";"""
-        query_type = 'reference'
+        elif ra is not None and dec is not None:
+            query_type = 'cone_search'
+            logger.debug(f"Query type: {query_type}, ra: {ra}, dec: {dec}, radius_deg: {radius_deg}")
+            try:
+                # Validate RA/DEC are numbers and convert to string for URL
+                ra_str = str(float(ra))
+                dec_str = str(float(dec))
+                logger.debug(f"Validated coordinates: ra_str={ra_str}, dec_str={dec_str}")
+            except (ValueError, TypeError):
+                 logger.warning("RA and DEC must be numeric values (decimal degrees)")
+                 raise ValueError("RA and DEC must be numeric values (decimal degrees).")
 
-    else:
-        # No valid combination of inputs provided
-        raise ValueError("Please provide one of the following input combinations: "
-                         "1. object_name, "
-                         "2. both ra and dec, "
-                         "3. bibcode.")
+            query = base_query_string + f""" FROM basic JOIN flux ON oidref = oid AND CONTAINS(POINT('ICRS', RA, DEC), CIRCLE('ICRS', {ra}, {dec}, {radius_deg})) = 1 ORDER BY "Main identifier";"""
 
-    # --- Construct the Full URL ---
-    # urlencode handles proper encoding of parameter values (like spaces in object_name)
-    # quote_via=urllib.parse.quote_plus ensures spaces become '+' if needed by the server,
-    # which is common in older URL schemes, though %20 is standard now.
-    query_string = urllib.parse.quote(query)
-    final_url = f"{base_url}&format={output_format}&query={query_string}"
-    return final_url
+        elif bibcode:
+            query = f""" SELECT basic.OID, main_id AS "Identifier", FROM has_ref JOIN basic ON oidref = oid JOIN ref ON oidbibref = oidbib, WHERE bibcode = {bibcode}, ORDER BY "Identifier";"""
+            query_type = 'reference'
+            logger.debug(f"Query type: {query_type}, bibcode: {bibcode}")
+
+        else:
+            # No valid combination of inputs provided
+            logger.warning("No valid input combination provided for SIMBAD query")
+            raise ValueError("Please provide one of the following input combinations: "
+                             "1. object_name, "
+                             "2. both ra and dec, "
+                             "3. bibcode.")
+
+        # --- Construct the Full URL ---
+        # urlencode handles proper encoding of parameter values (like spaces in object_name)
+        # quote_via=urllib.parse.quote_plus ensures spaces become '+' if needed by the server,
+        # which is common in older URL schemes, though %20 is standard now.
+        query_string = urllib.parse.quote(query)
+        final_url = f"{base_url}&format={output_format}&query={query_string}"
+        logger.debug(f"Final URL: {final_url}")
+        return final_url
+
+    except Exception as e:
+        logger.warning(f"Error in simbad_api function: {str(e)}")
+        raise

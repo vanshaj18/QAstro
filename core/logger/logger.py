@@ -55,7 +55,7 @@ def setup_logger(file_name: str, log_level: int = logging.INFO) -> logging.Logge
     
     # Console handler - logs to console
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(log_level)
+    console_handler.setLevel(logging.DEBUG)  # Always show DEBUG and above in console
     console_handler.setFormatter(console_formatter)
     
     # Add handlers to logger
