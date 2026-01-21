@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, Union
 import requests
+import json
 from core.gaia import gaia_api
 from core.irsa import irsa_api, irsa_submit_async_job, irsa_wait_for_job, build_irsa_query
 from core.ned import ned_api
@@ -7,6 +8,8 @@ from core.sdss import sdss_api
 from core.simbad import simbad_api
 from core.viser import viser_api
 from core.ads import ads_api, get_ads_headers
+from core.full_search import full_search_api
+from core.middleware.middleware import middleware
 
 def data_fetcher(object_name, 
                     ra, 
@@ -87,9 +90,22 @@ def data_fetcher(object_name,
     elif database == "GAIA ARCHIVE":
         url = gaia_api(object_name, ra, dec, extra_options)
         print(url)
-    # else: # this will be the case of ALL the databases
-    #     full_data = full_search_api()
-    #     return full_data
+
+    else: # this will be the case of ALL the databases
+        full_data = full_search_api(
+            object_name=object_name,
+            ra=float(ra) if ra else None,
+            dec=float(dec) if dec else None,
+            bibcode=bibcode,
+            extra_options=extra_options,
+            wavelength=wavelength,
+            use_async_irsa=use_async_irsa,
+            output_format='json',
+            use_async=True
+        )
+        # full_data is a dict of database names -> response objects
+        return middleware(full_data)
 
     data = requests.get(url)
-    return data
+    # Single response object - pass through middleware
+    return middleware(data)
