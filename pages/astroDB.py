@@ -5,6 +5,7 @@ from core.visualizer import display_data
 from utils.database_info import db_markdown
 import streamlit as st
 from utils.modal import _modal_creator
+from core.logger.logger import view_logs
 
 # define the function for the data page
 def data_page():
@@ -43,17 +44,16 @@ def data_page():
         </div>
     """
 
-    col1, col2 = st.columns([0.95, 0.005])
+    col1, col2 = st.columns([0.95, 0.05])
     with col1:
         st.markdown('<h2 style="display:inline;">Querying Astronomical Data</h2>', unsafe_allow_html=True)
     with col2:
         if st.button("ℹ", key="show_query_info", help="How to query?"):
             st.session_state.query_info_modal_closed = False
-            _modal_creator(input_text=query_info_text, checkbox_flag=False, 
+            _modal_creator(input_text=query_info_text, checkbox_flag=False,
                 modal_kwargs={'key': 'query_info_modal', 'title': 'How to Query Astronomical Data', 'padding': 10, 'max_width': 1000})
 
     # Sidebar - User Input
-    # Sidebar form for user input
     st.sidebar.header("🔍 Query Parameters")
     object_name = st.sidebar.text_input("Enter Object Name")
     ra = st.sidebar.text_input("RA (deg)")
@@ -85,6 +85,20 @@ def data_page():
             'author': author if author else None,
             'year_range': year_range if year_range else None
         }
+
+    # View Logs Toggle in Sidebar
+    st.sidebar.markdown("---")
+    view_logs_toggle = st.sidebar.toggle("📋 View Logs", key="view_logs_toggle", help="Toggle to show/hide application logs")
+    
+    # Display logs in sidebar if toggle is enabled
+    if view_logs_toggle:
+        st.sidebar.markdown("### 📋 Application Logs")
+        try:
+            logs_content = view_logs()
+            st.sidebar.code(logs_content, language="log")
+        except Exception as e:
+            st.sidebar.error(f"Error loading logs: {e}")
+            st.sidebar.code("Unable to load logs", language="log")
 
     submitted = st.sidebar.button("Fetch Data")
     if st.sidebar.button("New Query"):
@@ -127,6 +141,7 @@ def data_page():
             
             except Exception as e:
                 st.error(f"Error processing data: {e}")
+                # Logs are already shown in sidebar if toggle is enabled
                 sys.exit(1)
 
         st.success("✅ Data fetched successfully!")
@@ -134,6 +149,7 @@ def data_page():
 
         try:
             st.dataframe(df)
+            # Logs are already shown in sidebar if toggle is enabled
         except Exception as e:
             st.error(f"Error displaying dataframe: {e}")
             sys.exit(1)
