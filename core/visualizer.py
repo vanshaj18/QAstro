@@ -2,6 +2,9 @@ from io import StringIO
 import json
 import pandas as pd
 import streamlit as st
+from core.logger.logger import setup_logger
+
+logger = setup_logger(__name__)
 
 def display_data(data, database: str):
     """
@@ -14,7 +17,9 @@ def display_data(data, database: str):
     Returns:
         df: Dataframe for easy visualization 
     """
-    extractedData=data
+    logger.debug(f"Starting display data: {data}")
+    
+    extractedData=data["data"]
     
     #extracting metadata
     if database != "NED" and database != "IRSA":

@@ -1,9 +1,123 @@
 import unittest
 import os
+import sys
+from pathlib import Path
 from unittest.mock import patch, MagicMock
 import urllib.parse
+from collections import defaultdict
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from core.ads import ads_api, get_ads_api_key, get_ads_headers, validate_ads_parameters
 
+
+class DynamicTestResult(unittest.TestResult):
+    """Custom test result class that tracks and displays test results dynamically."""
+
+    def __init__(self, stream=None, descriptions=None, verbosity=None):
+        super().__init__(stream, descriptions, verbosity)
+        self.test_results = defaultdict(list)
+        self.current_test_class = None
+
+    def startTest(self, test):
+        """Called when a test starts."""
+        super().startTest(test)
+        # Extract test class name
+        test_class_name = test.__class__.__name__
+        if test_class_name != self.current_test_class:
+            self.current_test_class = test_class_name
+            if self.stream:
+                self.stream.write(f"\n🧪 Running tests for {test_class_name}:\n")
+                self.stream.write("-" * 50 + "\n")
+
+    def addSuccess(self, test):
+        """Called when a test passes."""
+        super().addSuccess(test)
+        test_name = test._testMethodName
+        self.test_results['passed'].append(f"{self.current_test_class}.{test_name}")
+        if self.stream:
+            self.stream.write(f"✅ PASS: {test_name}\n")
+
+    def addFailure(self, test, err):
+        """Called when a test fails."""
+        super().addFailure(test, err)
+        test_name = test._testMethodName
+        self.test_results['failed'].append(f"{self.current_test_class}.{test_name}")
+        if self.stream:
+            self.stream.write(f"❌ FAIL: {test_name}\n")
+
+    def addError(self, test, err):
+        """Called when a test errors."""
+        super().addError(test, err)
+        test_name = test._testMethodName
+        self.test_results['errors'].append(f"{self.current_test_class}.{test_name}")
+        if self.stream:
+            self.stream.write(f"💥 ERROR: {test_name}\n")
+
+    def printSummary(self):
+        """Print a comprehensive test summary."""
+        if not self.stream:
+            return
+
+        total_tests = len(self.test_results['passed']) + len(self.test_results['failed']) + len(self.test_results.get('errors', []))
+        passed_count = len(self.test_results['passed'])
+        failed_count = len(self.test_results['failed'])
+        error_count = len(self.test_results.get('errors', []))
+
+        self.stream.write("\n" + "=" * 60 + "\n")
+        self.stream.write("📊 TEST SUMMARY\n")
+        self.stream.write("=" * 60 + "\n")
+
+        self.stream.write(f"Total Tests: {total_tests}\n")
+        self.stream.write(f"✅ Passed: {passed_count}\n")
+        self.stream.write(f"❌ Failed: {failed_count}\n")
+        if error_count > 0:
+            self.stream.write(f"💥 Errors: {error_count}\n")
+
+        success_rate = (passed_count / total_tests * 100) if total_tests > 0 else 0
+        self.stream.write(f"📈 Success Rate: {success_rate:.1f}%\n")
+
+        if self.test_results['failed']:
+            self.stream.write(f"\n❌ FAILED TESTS:\n")
+            for failed_test in self.test_results['failed']:
+                self.stream.write(f"  • {failed_test}\n")
+
+        if self.test_results.get('errors'):
+            self.stream.write(f"\n💥 ERROR TESTS:\n")
+            for error_test in self.test_results['errors']:
+                self.stream.write(f"  • {error_test}\n")
+
+        if passed_count == total_tests:
+            self.stream.write(f"\n🎉 ALL TESTS PASSED!\n")
+        elif failed_count > 0 or error_count > 0:
+            self.stream.write(f"\n⚠️  SOME TESTS FAILED OR ERRORED!\n")
+
+        self.stream.write("=" * 60 + "\n")
+
+
+def run_tests_with_summary():
+    """Run tests with dynamic summary reporting."""
+    # Load all tests
+    loader = unittest.TestLoader()
+    suite = loader.loadTestsFromModule(sys.modules[__name__])
+
+    # Create custom result object
+    result = DynamicTestResult(verbosity=2)
+    result.stream = sys.stdout
+
+    # Run the tests
+    print("🚀 Starting NASA ADS API Test Suite...")
+    print("=" * 60)
+
+    suite.run(result)
+
+    # Print final summary
+    result.printSummary()
+
+    # Return success/failure for exit code
+    return len(result.test_results['failed']) + len(result.test_results.get('errors', [])) == 0
 
 class TestAdsApi(unittest.TestCase):
     """Test suite for NASA ADS API integration."""
@@ -253,4 +367,65 @@ class TestAdsParameterValidation(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    # Create a test suite and run it
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestAdsApi)
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestAdsApiKey))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestAdsParameterValidation))
+
+    runner = unittest.TextTestRunner(verbosity=1)
+    result = runner.run(suite)
+
+    # Calculate summary metrics
+    total_tests = result.testsRun
+    failed = len(result.failures)
+    errors = len(result.errors)
+    passed = total_tests - failed - errors
+
+    # Print dynamic test summary
+    print("\n" + "="*60)
+    print("📊 NASA ADS API TEST SUMMARY")
+    print("="*60)
+    print(f"✅ PASSED: {passed}")
+    print(f"❌ FAILED: {failed}")
+    print(f"⚠️  ERRORS: {errors}")
+    print(f"🔢 TOTAL:  {total_tests}")
+
+    success_rate = (passed / total_tests * 100) if total_tests > 0 else 0
+    print(f"📈 SUCCESS RATE: {success_rate:.1f}%")
+    print("="*60)
+
+    # Show individual passed tests
+    if passed > 0:
+        print("\n✅ PASSED TESTS:")
+        for test_case in [TestAdsApi, TestAdsApiKey, TestAdsParameterValidation]:
+            test_names = [method for method in dir(test_case) if method.startswith('test_')]
+            for test_name in test_names:
+                full_test_name = f"{test_case.__name__}.{test_name}"
+                # Check if this test is not in failures or errors
+                if not any(full_test_name in failure[0] for failure in result.failures) and \
+                   not any(full_test_name in error[0] for error in result.errors):
+                    print(f"  • {full_test_name}")
+
+    # Show individual failed tests with details
+    if result.failures:
+        print(f"\n❌ FAILED TESTS:")
+        for test, traceback in result.failures:
+            print(f"  • {test}")
+
+    # Show individual error tests with details
+    if result.errors:
+        print(f"\n💥 ERROR TESTS:")
+        for test, traceback in result.errors:
+            print(f"  • {test}")
+
+    print("="*60)
+
+    if result.wasSuccessful():
+        print("🎉 ALL TESTS PASSED!")
+    else:
+        print("🚨 SOME TESTS FAILED OR ERRORED!")
+
+    print("="*60 + "\n")
+
+    # Exit with appropriate code
+    sys.exit(not result.wasSuccessful())

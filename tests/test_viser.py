@@ -1,13 +1,19 @@
 import unittest
+import sys
+from pathlib import Path
 import urllib.parse
+from collections import defaultdict
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from core.viser import (
-    viser_api, 
-    get_wavelength_catalogs, 
-    build_vizier_object_query, 
+    viser_api,
+    get_wavelength_catalogs,
+    build_vizier_object_query,
     build_vizier_cone_query
 )
-
-
 class TestViserApi(unittest.TestCase):
     """Test suite for VizieR API integration."""
     
@@ -140,8 +146,6 @@ class TestViserApi(unittest.TestCase):
         # Radius should be converted to degrees (10.0 arcmin = 0.1667 degrees)
         expected_radius_deg = custom_radius / 60.0
         self.assertIn(str(expected_radius_deg), decoded_query)
-
-
 class TestWavelengthCatalogs(unittest.TestCase):
     """Test suite for wavelength catalog filtering."""
     
@@ -198,7 +202,6 @@ class TestWavelengthCatalogs(unittest.TestCase):
         """Test None wavelength returns empty string."""
         filter_clause = get_wavelength_catalogs(None)
         self.assertEqual(filter_clause, "")
-
 
 class TestVizierQueryBuilding(unittest.TestCase):
     """Test suite for VizieR ADQL query construction."""
@@ -281,7 +284,6 @@ class TestVizierQueryBuilding(unittest.TestCase):
         self.assertEqual(object_query, object_query.strip())
         self.assertEqual(cone_query, cone_query.strip())
 
-
 class TestViserApiEdgeCases(unittest.TestCase):
     """Test suite for VizieR API edge cases and special scenarios."""
     
@@ -352,4 +354,66 @@ class TestViserApiEdgeCases(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    # Create a test suite and run it
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestViserApi)
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestWavelengthCatalogs))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestVizierQueryBuilding))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestViserApiEdgeCases))
+
+    runner = unittest.TextTestRunner(verbosity=1)
+    result = runner.run(suite)
+
+    # Calculate summary metrics
+    total_tests = result.testsRun
+    failed = len(result.failures)
+    errors = len(result.errors)
+    passed = total_tests - failed - errors
+
+    # Print dynamic test summary
+    print("\n" + "="*60)
+    print("📊 VIZIER API TEST SUMMARY")
+    print("="*60)
+    print(f"✅ PASSED: {passed}")
+    print(f"❌ FAILED: {failed}")
+    print(f"⚠️  ERRORS: {errors}")
+    print(f"🔢 TOTAL:  {total_tests}")
+
+    success_rate = (passed / total_tests * 100) if total_tests > 0 else 0
+    print(f"📈 SUCCESS RATE: {success_rate:.1f}%")
+    print("="*60)
+
+    # Show individual passed tests
+    if passed > 0:
+        print("\n✅ PASSED TESTS:")
+        for test_case in [TestViserApi, TestWavelengthCatalogs, TestVizierQueryBuilding, TestViserApiEdgeCases]:
+            test_names = [method for method in dir(test_case) if method.startswith('test_')]
+            for test_name in test_names:
+                full_test_name = f"{test_case.__name__}.{test_name}"
+                # Check if this test is not in failures or errors
+                if not any(full_test_name in failure[0] for failure in result.failures) and \
+                   not any(full_test_name in error[0] for error in result.errors):
+                    print(f"  • {full_test_name}")
+
+    # Show individual failed tests with details
+    if result.failures:
+        print(f"\n❌ FAILED TESTS:")
+        for test, traceback in result.failures:
+            print(f"  • {test}")
+
+    # Show individual error tests with details
+    if result.errors:
+        print(f"\n💥 ERROR TESTS:")
+        for test, traceback in result.errors:
+            print(f"  • {test}")
+
+    print("="*60)
+
+    if result.wasSuccessful():
+        print("🎉 ALL TESTS PASSED!")
+    else:
+        print("🚨 SOME TESTS FAILED OR ERRORED!")
+
+    print("="*60 + "\n")
+
+    # Exit with appropriate code
+    sys.exit(not result.wasSuccessful())

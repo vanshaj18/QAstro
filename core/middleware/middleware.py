@@ -5,7 +5,9 @@ for visualisation module.
 
 import requests
 from typing import Union, Dict, Any
+from core.logger.logger import setup_logger
 
+logger = setup_logger(__name__)
 
 def middleware(data: Union[requests.Response, Dict[str, requests.Response]]) -> Union[requests.Response, Dict[str, Any]]:
     """
@@ -21,6 +23,7 @@ def middleware(data: Union[requests.Response, Dict[str, requests.Response]]) -> 
         - If dict of responses: returns a dictionary mapping database names to 
           processed response data (with text, status_code, etc.)
     """
+    logger.debug(f"Starting middleware with data: {data}")
     # Check if data is a single response object
     if isinstance(data, requests.Response):
         # Single response object - return as-is
@@ -55,8 +58,13 @@ def middleware(data: Union[requests.Response, Dict[str, requests.Response]]) -> 
                     "status_code": 500
                 }
         
-        return processed_data
+        logger.debug(f"Middleware processed data: {processed_data}")
+        return {
+            "data": processed_data,
+            "status_code": 200,
+            "status": "success"
+        }
     
     else:
-        # Unknown data type
+        logger.warning(f"Middleware received unsupported data type: {type(data)}. Expected requests.Response or Dict[str, requests.Response]")
         raise TypeError(f"Middleware received unsupported data type: {type(data)}. Expected requests.Response or Dict[str, requests.Response]")

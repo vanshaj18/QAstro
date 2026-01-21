@@ -1,7 +1,14 @@
 import pytest
+import sys
+from pathlib import Path
 import urllib.parse
-from core.ned import ned_api, _ned_api_html
+from collections import defaultdict
 
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+from core.ned import ned_api, _ned_api_html
 
 class TestNedApi:
     """Test suite for enhanced NED API functionality."""
@@ -177,3 +184,103 @@ class TestNedApiIntegration:
         params = urllib.parse.parse_qs(parsed_url.query)
         
         assert params['radius'][0] == str(radius)
+
+
+if __name__ == '__main__':
+    import subprocess
+
+    # Run tests with pytest and capture output
+    result = subprocess.run([
+        sys.executable, '-m', 'pytest',
+        __file__,
+        '-v',
+        '--tb=short',
+        '--color=no'
+    ], capture_output=True, text=True, cwd=Path(__file__).parent)
+
+    print(result.stdout)
+    if result.stderr:
+        print("STDERR:", result.stderr)
+
+    # Parse the output to extract test results
+    lines = result.stdout.split('\n')
+    total_tests = 0
+    passed = 0
+    failed = 0
+    errors = 0
+    passed_tests = []
+    failed_tests = []
+    error_tests = []
+
+    for line in lines:
+        if '::' in line and ('PASSED' in line or 'FAILED' in line or 'ERROR' in line):
+            if 'PASSED' in line:
+                passed += 1
+                # Extract test name
+                test_name = line.split('::')[-1].split(' PASSED')[0].strip()
+                passed_tests.append(test_name)
+            elif 'FAILED' in line:
+                failed += 1
+                test_name = line.split('::')[-1].split(' FAILED')[0].strip()
+                failed_tests.append(test_name)
+            elif 'ERROR' in line:
+                errors += 1
+                test_name = line.split('::')[-1].split(' ERROR')[0].strip()
+                error_tests.append(test_name)
+
+        # Try to extract total from summary line
+        if 'passed' in line.lower() and 'failed' in line.lower():
+            parts = line.split(',')
+            for part in parts:
+                part = part.strip()
+                if part.endswith('passed'):
+                    passed = int(part.split()[0])
+                elif part.endswith('failed'):
+                    failed = int(part.split()[0])
+                elif part.endswith('error') or part.endswith('errors'):
+                    errors = int(part.split()[0])
+
+    total_tests = passed + failed + errors
+
+    # Print dynamic test summary
+    print("\n" + "="*60)
+    print("📊 NED API TEST SUMMARY")
+    print("="*60)
+    print(f"✅ PASSED: {passed}")
+    print(f"❌ FAILED: {failed}")
+    print(f"⚠️  ERRORS: {errors}")
+    print(f"🔢 TOTAL:  {total_tests}")
+
+    success_rate = (passed / total_tests * 100) if total_tests > 0 else 0
+    print(f"📈 SUCCESS RATE: {success_rate:.1f}%")
+    print("="*60)
+
+    # Show individual passed tests
+    if passed_tests:
+        print("\n✅ PASSED TESTS:")
+        for test in passed_tests:
+            print(f"  • {test}")
+
+    # Show individual failed tests
+    if failed_tests:
+        print("\n❌ FAILED TESTS:")
+        for test in failed_tests:
+            print(f"  • {test}")
+
+    # Show individual error tests
+    if error_tests:
+        print("\n💥 ERROR TESTS:")
+        for test in error_tests:
+            print(f"  • {test}")
+
+    print("="*60)
+
+    if failed == 0 and errors == 0:
+        print("🎉 ALL TESTS PASSED!")
+    else:
+        print("🚨 SOME TESTS FAILED OR ERRORED!")
+
+    print("="*60 + "\n")
+
+    # Exit with appropriate code
+    sys.exit(1 if (failed > 0 or errors > 0) else 0)

@@ -7,15 +7,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional, Dict, Any
 import json
 
-
-class ErrorResponse:
-    """Mock response object for error cases."""
-    def __init__(self, error_msg: str):
-        self.text = ""
-        self.status_code = 500
-        self.error = error_msg
-
-
 # Import all database API functions
 from core.gaia import gaia_api
 from core.irsa import irsa_api, irsa_submit_async_job, irsa_wait_for_job, build_irsa_query
@@ -24,7 +15,9 @@ from core.sdss import sdss_api
 from core.simbad import simbad_api
 from core.viser import viser_api
 from core.ads import ads_api, get_ads_headers
+from core.logger.logger import setup_logger
 
+logger = setup_logger(__name__)
 
 def _fetch_simbad(object_name: Optional[str], ra: Optional[float], dec: Optional[float], 
                   bibcode: Optional[str], output_format: str = 'json') -> requests.Response:
@@ -133,6 +126,7 @@ def full_search_api(
         Dict[str, requests.Response]: Dictionary containing response objects from all databases with database name as key.
                                       Each database name maps to a requests.Response object.
     """
+    logger.debug(f"Starting full search")
     # Convert ra/dec to float if they are strings
     try:
         ra = float(ra) if ra and isinstance(ra, (str, int, float)) else None
@@ -144,35 +138,37 @@ def full_search_api(
     except (ValueError, TypeError):
         dec = None
     
+    # result JSON
     full_search_data = {}
     
     # Prepare tasks for all databases
-    tasks = []
+    tasks_queue = []
     
     # SIMBAD - requires object_name, ra/dec, or bibcode
+    logger.debug(f"Adding tasks_queue in queue")
     if object_name or (ra is not None and dec is not None) or bibcode:
-        tasks.append(("SIMBAD", _fetch_simbad, (object_name, ra, dec, bibcode, output_format)))
+        tasks_queue.append(("SIMBAD", _fetch_simbad, (object_name, ra, dec, bibcode, output_format)))
     
     # VizieR - requires object_name or ra/dec
     if object_name or (ra is not None and dec is not None):
-        tasks.append(("VizieR", _fetch_viser, (object_name, ra, dec, wavelength, output_format)))
+        tasks_queue.append(("VizieR", _fetch_viser, (object_name, ra, dec, wavelength, output_format)))
     
     # NED - requires object_name or ra/dec
     if object_name or (ra is not None and dec is not None):
-        tasks.append(("NED", _fetch_ned, (object_name, ra, dec, bibcode, output_format)))
+        tasks_queue.append(("NED", _fetch_ned, (object_name, ra, dec, bibcode, output_format)))
     
     # SDSS - requires ra/dec
     if ra is not None and dec is not None:
-        tasks.append(("SDSS", _fetch_sdss, (object_name, ra, dec, extra_options, output_format)))
+        tasks_queue.append(("SDSS", _fetch_sdss, (object_name, ra, dec, extra_options, output_format)))
     
     # IRSA - requires object_name or ra/dec, and extra_options
     if (object_name or (ra is not None and dec is not None)) and extra_options and extra_options != "NONE":
-        tasks.append(("IRSA", _fetch_irsa, (object_name, ra, dec, extra_options, use_async_irsa, output_format)))
+        tasks_queue.append(("IRSA", _fetch_irsa, (object_name, ra, dec, extra_options, use_async_irsa, output_format)))
     
     # GAIA ARCHIVE - requires object_name or ra/dec, and gaia_database
     gaia_db = extra_options if extra_options and extra_options in ["dr1", "dr2", "dr3"] else "dr3"
     if object_name or (ra is not None and dec is not None):
-        tasks.append(("GAIA ARCHIVE", _fetch_gaia, (object_name, ra, dec, gaia_db, output_format)))
+        tasks_queue.append(("GAIA ARCHIVE", _fetch_gaia, (object_name, ra, dec, gaia_db, output_format)))
     
     # NASA ADS - requires object_name, bibcode, or author
     if object_name or bibcode:
@@ -182,19 +178,20 @@ def full_search_api(
         if isinstance(extra_options, dict):
             author = extra_options.get('author')
             year_range = extra_options.get('year_range')
-        tasks.append(("NASA ADS", _fetch_ads, (object_name, bibcode, author, year_range, output_format)))
+        tasks_queue.append(("NASA ADS", _fetch_ads, (object_name, bibcode, author, year_range, output_format)))
     
-    if not tasks:
+    if not tasks_queue:
         return {"error": "No valid search parameters provided. Need at least object_name, ra/dec, or bibcode."}
     
-    # Execute tasks concurrently or sequentially
+    # Execute tasks_queue concurrently or sequentially
     if use_async:
+        logger.debug(f"Executing tasks_queue concurrently")
         # Use ThreadPoolExecutor for concurrent execution
-        with ThreadPoolExecutor(max_workers=len(tasks)) as executor:
-            # Submit all tasks
+        with ThreadPoolExecutor(max_workers=len(tasks_queue)) as executor:
+            # Submit all tasks_queue
             future_to_db = {
                 executor.submit(func, *args): db_name 
-                for db_name, func, args in tasks
+                for db_name, func, args in tasks_queue
             }
             
             # Collect results as they complete
@@ -205,15 +202,26 @@ def full_search_api(
                     full_search_data[db_name] = response
                 except Exception as e:
                     # Create an error response object for consistency
-                    full_search_data[db_name] = ErrorResponse(str(e))
+                    full_search_data[db_name] = {
+                        "status": "error",
+                        "error": str(e),
+                        "status_code": 500
+                    }
+                    logger.warning(f"Error in full search: {str(e)}")
     else:
         # Sequential execution
-        for db_name, func, args in tasks:
+        logger.debug(f"Executing tasks_queue sequentially")
+        for db_name, func, args in tasks_queue:
             try:
                 response = func(*args)
                 full_search_data[db_name] = response
             except Exception as e:
                 # Create an error response object for consistency
-                full_search_data[db_name] = ErrorResponse(str(e))
+                full_search_data[db_name] = {
+                    "status": "error",
+                    "error": str(e),
+                    "status_code": 500
+                }
+                logger.warning(f"Error in full search: {str(e)}")
     
     return full_search_data

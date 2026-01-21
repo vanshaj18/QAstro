@@ -113,9 +113,7 @@ def data_page():
                     database=database,
                     extra_options=extra_options
                 )
-                # if data.status_code == 500:
-                #     raise ValueError("Server error. Please try again later.")
-                if data.status_code != 200:
+                if data["status_code"] != 200:
                     raise ValueError("No data returned. Please check your inputs.")
                 
             except Exception as e:
@@ -123,7 +121,7 @@ def data_page():
                 sys.exit(1)
 
             try: 
-                df = display_data(data.text, database)
+                df = display_data(data["data"], database)
                 df.fillna('Not Available', inplace=True)
                 df = df.loc[:, ~df.columns.duplicated()]
             
